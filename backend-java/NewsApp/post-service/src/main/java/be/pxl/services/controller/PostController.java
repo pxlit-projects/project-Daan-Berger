@@ -1,6 +1,6 @@
 package be.pxl.services.controller;
 
-import be.pxl.services.domain.Post;
+import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.services.IPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,10 @@ public class PostController {
     private final IPostService postService;
 
     @GetMapping
-    public ResponseEntity<List<Post>> getPosts() {
+    public ResponseEntity<List<PostResponse>> getPosts() {
         return new ResponseEntity<>(postService.getAllPosts(), HttpStatus.OK);
     }
+
+
+
 }
