@@ -19,7 +19,7 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long postId;
-    private String Comment;
+    private String comment;
     private boolean approved;
     private LocalDateTime reviewDate;
 }
