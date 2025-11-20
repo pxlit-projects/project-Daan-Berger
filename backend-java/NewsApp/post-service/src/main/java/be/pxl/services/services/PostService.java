@@ -40,10 +40,21 @@ public class PostService implements IPostService{
     }
 
     @Override
-    public List<PostResponse> getAllPostsForEditor() {
-        return repository.findAll().stream()
-                .map(this::mapToPostResponse)
-                .toList();
+    public List<PostResponse> getAllPostsForEditor(String status) {
+        List<Post> posts;
+
+        if (status != null && !status.isBlank()) {
+            try {
+                PostStatus requestedStatus = PostStatus.valueOf(status.toUpperCase());
+                posts = repository.findByPostStatus(requestedStatus);
+            } catch (IllegalArgumentException e) {
+                return List.of();
+            }
+        } else {
+            posts = repository.findAll();
+        }
+
+        return posts.stream().map(this::mapToPostResponse).toList();
     }
 
 

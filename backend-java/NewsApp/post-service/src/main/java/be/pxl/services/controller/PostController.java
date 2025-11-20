@@ -30,12 +30,13 @@ public class PostController {
 
     @GetMapping("/editor")
     public ResponseEntity<List<PostResponse>> getPostsForEditor(
-            @RequestHeader("X-Role") String role
+            @RequestHeader("X-Role") String role,
+            @RequestParam(required = false) String status
     ) {
         if (!"editor".equalsIgnoreCase(role)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.ok(postService.getAllPostsForEditor());
+        return ResponseEntity.ok(postService.getAllPostsForEditor(status));
     }
 
     @PostMapping

@@ -10,7 +10,7 @@ import java.util.List;
 public interface IPostService {
     List<PostResponse> getPublishedPosts(String content, String author, String date);
 
-    List<PostResponse> getAllPostsForEditor();
+    List<PostResponse> getAllPostsForEditor(String status);
 
     void addNewPost(@Valid PostRequest postRequest);
 
