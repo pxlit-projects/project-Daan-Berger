@@ -16,4 +16,5 @@ public class PostRequest {
     private String content;
     @NotNull
     private String author;
+    private boolean isDraft;
 }

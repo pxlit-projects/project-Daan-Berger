@@ -1,6 +1,7 @@
 package be.pxl.services.services;
 
 import be.pxl.services.domain.Post;
+import be.pxl.services.domain.PostStatus;
 import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.repository.PostRepository;
@@ -31,6 +32,12 @@ public class PostService implements IPostService{
                 .author(postRequest.getAuthor())
                 .creationDate(LocalDateTime.now())
                 .build();
+
+        if (postRequest.isDraft()) {
+            post.setPostStatus(PostStatus.DRAFT);
+        } else {
+            post.setPostStatus(PostStatus.PENDING);
+        }
 
         repository.save(post);
     }
