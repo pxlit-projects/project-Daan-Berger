@@ -20,8 +20,22 @@ public class PostController {
     private final IPostService postService;
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getPosts() {
-        return new ResponseEntity<>(postService.getAllPosts(), HttpStatus.OK);
+    public List<PostResponse> getPublishedPosts(
+            @RequestParam(required = false) String content,
+            @RequestParam(required = false) String author,
+            @RequestParam(required = false) String date
+    ) {
+        return postService.getPublishedPosts(content, author, date);
+    }
+
+    @GetMapping("/editor")
+    public ResponseEntity<List<PostResponse>> getPostsForEditor(
+            @RequestHeader("X-Role") String role
+    ) {
+        if (!"editor".equalsIgnoreCase(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        return ResponseEntity.ok(postService.getAllPostsForEditor());
     }
 
     @PostMapping
@@ -34,4 +48,6 @@ public class PostController {
     public void editPost(@RequestBody PostEditDto postEditDto, @PathVariable long postId) {
         postService.editPost(postEditDto, postId);
     }
+
+
 }

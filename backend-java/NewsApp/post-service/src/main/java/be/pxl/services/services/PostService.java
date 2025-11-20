@@ -7,11 +7,13 @@ import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService implements IPostService{
@@ -19,17 +21,31 @@ public class PostService implements IPostService{
     private final PostRepository repository;
 
     @Override
-    public List<PostResponse> getAllPosts() {
-        List<Post> posts = repository.findAll();
-        return posts.stream()
-                .map(p -> new PostResponse(
-                        p.getId(),
-                        p.getTitle(),
-                        p.getContent(),
-                        p.getAuthor(),
-                        p.getCreationDate(),
-                        p.getPostStatus())).toList();
+    public List<PostResponse> getPublishedPosts(String content, String author, String date) {
+        List<Post> posts = repository.findByPostStatus(PostStatus.PUBLISHED);
+
+        if (content != null) {
+            posts = posts.stream().filter(p -> p.getContent().equals(content)).toList();
+        }
+
+        if (author != null) {
+            posts = posts.stream().filter(p -> p.getAuthor().equals(author)).toList();
+        }
+
+        if (date != null) {
+            posts = posts.stream().filter(p -> p.getCreationDate().toString().equals(date)).toList();
+        }
+
+        return posts.stream().map(this::mapToPostResponse).toList();
     }
+
+    @Override
+    public List<PostResponse> getAllPostsForEditor() {
+        return repository.findAll().stream()
+                .map(this::mapToPostResponse)
+                .toList();
+    }
+
 
     @Override
     public void addNewPost(PostRequest postRequest) {
@@ -70,6 +86,17 @@ public class PostService implements IPostService{
             }
         }
         repository.save(post);
+    }
+
+    private PostResponse mapToPostResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .title(post.getTitle())
+                .author(post.getAuthor())
+                .content(post.getContent())
+                .creationDate(post.getCreationDate())
+                .status(post.getPostStatus())
+                .build();
     }
 
 }

@@ -8,7 +8,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface IPostService {
-    List<PostResponse> getAllPosts();
+    List<PostResponse> getPublishedPosts(String content, String author, String date);
+
+    List<PostResponse> getAllPostsForEditor();
 
     void addNewPost(@Valid PostRequest postRequest);
 
