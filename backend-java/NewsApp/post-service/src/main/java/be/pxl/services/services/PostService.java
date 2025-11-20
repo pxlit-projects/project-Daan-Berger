@@ -1,11 +1,13 @@
 package be.pxl.services.services;
 
 import be.pxl.services.domain.Post;
+import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,6 +21,18 @@ public class PostService implements IPostService{
         List<Post> posts = repository.findAll();
         return posts.stream().map(p -> new PostResponse(
                 p.getTitle(), p.getContent(), p.getAuthor(), p.getCreationDate())).toList();
+    }
+
+    @Override
+    public void addNewPost(PostRequest postRequest) {
+        Post post = Post.builder()
+                .title(postRequest.getTitle())
+                .content(postRequest.getContent())
+                .author(postRequest.getAuthor())
+                .creationDate(LocalDateTime.now())
+                .build();
+
+        repository.save(post);
     }
 
 }
