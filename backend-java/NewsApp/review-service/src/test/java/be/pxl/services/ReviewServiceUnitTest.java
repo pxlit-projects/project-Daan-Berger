@@ -41,7 +41,7 @@ public class ReviewServiceUnitTest {
     @Test
     public void getPendingPosts_ShouldReturnListFromClient() {
         PostResponse mockPost = new PostResponse(
-                1L, "Test Title", "Content", "Bob", LocalDateTime.now(), "PENDING"
+                1L, "Test Title", "Content", "Bob", LocalDateTime.now(), PostStatus.PENDING
         );
 
         String role = "editor";

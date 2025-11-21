@@ -1,5 +1,7 @@
 package be.pxl.services.domain.dto;
 
+import be.pxl.services.domain.PostStatus;
+
 import java.time.LocalDateTime;
 
 public record PostResponse(
@@ -8,5 +10,5 @@ public record PostResponse(
         String content,
         String author,
         LocalDateTime creationDate,
-        String status
+        PostStatus status
 ) {}
