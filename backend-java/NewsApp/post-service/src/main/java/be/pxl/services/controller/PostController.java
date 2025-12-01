@@ -3,6 +3,7 @@ package be.pxl.services.controller;
 import be.pxl.services.domain.dto.PostEditDto;
 import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
+import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.services.IPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,9 +46,18 @@ public class PostController {
         postService.addNewPost(postRequest);
     }
 
-    @PutMapping("{postId}")
+    @PutMapping("/{postId}")
     public void editPost(@RequestBody PostEditDto postEditDto, @PathVariable long postId) {
         postService.editPost(postEditDto, postId);
+    }
+
+    @PutMapping("/{postId}/status")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public void updatePostStatus(
+            @PathVariable long postId,
+            @RequestBody PostStatusRequest statusRequest)
+    {
+        postService.updatePostStatus(postId, statusRequest);
     }
 
 

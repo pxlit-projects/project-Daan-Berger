@@ -5,6 +5,7 @@ import be.pxl.services.domain.PostStatus;
 import be.pxl.services.domain.dto.PostEditDto;
 import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
+import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,6 +99,16 @@ public class PostService implements IPostService{
         }
         repository.save(post);
     }
+
+    @Override
+    public void updatePostStatus(long postId, PostStatusRequest statusRequest) {
+            Post post = repository.findById(postId)
+                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+
+            post.setPostStatus(statusRequest.status());
+            repository.save(post);
+    }
+
 
     private PostResponse mapToPostResponse(Post post) {
         return PostResponse.builder()
