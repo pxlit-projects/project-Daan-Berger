@@ -1,16 +1,31 @@
 package be.pxl.services.services;
 
+import be.pxl.services.domain.Comment;
 import be.pxl.services.domain.dto.CommentResponse;
 import be.pxl.services.domain.dto.CreateCommentRequest;
+import be.pxl.services.repository.CommentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService implements ICommentService{
-    @Override
-    public void createComment(CreateCommentRequest commentRequest) {
 
+    private final CommentRepository repository;
+
+    @Override
+    public void createComment(CreateCommentRequest commentRequest, long postId) {
+        Comment comment = Comment.builder()
+                .postId(postId)
+                .content(commentRequest.getContent())
+                .author(commentRequest.getAuthor())
+                .creationDate(LocalDateTime.now())
+                .build();
+
+        repository.save(comment);
     }
 
     @Override
@@ -19,12 +34,12 @@ public class CommentService implements ICommentService{
     }
 
     @Override
-    public void updateComment(Long commentId) {
+    public void updateComment(long commentId) {
 
     }
 
     @Override
-    public void deleteComment(Long commentId) {
+    public void deleteComment(long commentId) {
 
     }
 }

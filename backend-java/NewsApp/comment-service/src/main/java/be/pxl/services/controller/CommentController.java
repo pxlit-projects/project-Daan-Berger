@@ -15,12 +15,12 @@ import java.util.List;
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
 public class CommentController {
-    private ICommentService service;
+    private final ICommentService service;
 
-    @PostMapping
+    @PostMapping("/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createComment(@Valid @RequestBody CreateCommentRequest commentRequest) {
-        service.createComment(commentRequest);
+    public void createComment(@Valid @RequestBody CreateCommentRequest commentRequest, @PathVariable long postId) {
+        service.createComment(commentRequest, postId);
     }
 
     @GetMapping
@@ -28,13 +28,13 @@ public class CommentController {
         return ResponseEntity.ok(service.getAllComments());
     }
 
-    @PutMapping("{commentId}")
+    @PutMapping("/{commentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateComment(@PathVariable long commentId) {
         service.updateComment(commentId);
     }
 
-    @DeleteMapping("{commentId}")
+    @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void deleteComment(@PathVariable long commentId) {
         service.deleteComment(commentId);
