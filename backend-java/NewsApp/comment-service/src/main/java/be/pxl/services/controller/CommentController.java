@@ -1,6 +1,7 @@
 package be.pxl.services.controller;
 
 import be.pxl.services.domain.dto.CommentResponse;
+import be.pxl.services.domain.dto.CommentUpdateDto;
 import be.pxl.services.domain.dto.CreateCommentRequest;
 import be.pxl.services.services.ICommentService;
 import jakarta.validation.Valid;
@@ -30,8 +31,8 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void updateComment(@PathVariable long commentId) {
-        service.updateComment(commentId);
+    public void updateComment(@PathVariable long commentId, @RequestBody CommentUpdateDto updateDto) {
+        service.updateComment(commentId, updateDto);
     }
 
     @DeleteMapping("/{commentId}")
