@@ -20,7 +20,7 @@ public class CommentController {
 
     @PostMapping("/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createComment(@Valid @RequestBody CreateCommentRequest commentRequest, @PathVariable long postId) {
+    public void createComment(@Valid @RequestBody CreateCommentRequest commentRequest, @PathVariable Long postId) {
         service.createComment(commentRequest, postId);
     }
 
@@ -31,13 +31,13 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void updateComment(@PathVariable long commentId, @RequestBody CommentUpdateDto updateDto) {
+    public void updateComment(@PathVariable Long commentId, @RequestBody CommentUpdateDto updateDto) {
         service.updateComment(commentId, updateDto);
     }
 
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public void deleteComment(@PathVariable long commentId) {
+    public void deleteComment(@PathVariable Long commentId) {
         service.deleteComment(commentId);
     }
 }

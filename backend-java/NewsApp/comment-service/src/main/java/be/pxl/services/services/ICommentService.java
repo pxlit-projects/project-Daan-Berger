@@ -7,9 +7,9 @@ import be.pxl.services.domain.dto.CreateCommentRequest;
 import java.util.List;
 
 public interface ICommentService {
-    void createComment(CreateCommentRequest commentRequest, long postId);
+    void createComment(CreateCommentRequest commentRequest, Long postId);
 
     List<CommentResponse> getAllComments();
-    void updateComment(long commentId, CommentUpdateDto updateDto);
-    void deleteComment(long commentId);
+    void updateComment(Long commentId, CommentUpdateDto updateDto);
+    void deleteComment(Long commentId);
 }

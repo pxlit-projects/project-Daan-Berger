@@ -47,18 +47,21 @@ public class PostController {
     }
 
     @PutMapping("/{postId}")
-    public void editPost(@RequestBody PostEditDto postEditDto, @PathVariable long postId) {
+    public void editPost(@RequestBody PostEditDto postEditDto, @PathVariable Long postId) {
         postService.editPost(postEditDto, postId);
     }
 
     @PutMapping("/{postId}/status")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void updatePostStatus(
-            @PathVariable long postId,
+            @PathVariable Long postId,
             @RequestBody PostStatusRequest statusRequest)
     {
         postService.updatePostStatus(postId, statusRequest);
     }
 
-
+    @GetMapping("/{postId}")
+    public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.getPostById(postId));
+    }
 }

@@ -1,12 +1,18 @@
 package be.pxl.services.services;
 
+import be.pxl.services.client.PostClient;
 import be.pxl.services.domain.Comment;
 import be.pxl.services.domain.dto.CommentResponse;
 import be.pxl.services.domain.dto.CommentUpdateDto;
 import be.pxl.services.domain.dto.CreateCommentRequest;
 import be.pxl.services.repository.CommentRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,9 +22,23 @@ import java.util.List;
 public class CommentService implements ICommentService{
 
     private final CommentRepository repository;
+    private final PostClient postClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
 
     @Override
-    public void createComment(CreateCommentRequest commentRequest, long postId) {
+    public void createComment(CreateCommentRequest commentRequest, Long postId) {
+
+        try {
+            postClient.getPostById(postId);
+        } catch (FeignException.NotFound e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId);
+        } catch (FeignException e) {
+            logger.error("Can't access Post Service", e);
+
+            throw new RuntimeException("Can't create comment.");
+        }
+
         Comment comment = Comment.builder()
                 .postId(postId)
                 .content(commentRequest.getContent())
@@ -36,7 +56,7 @@ public class CommentService implements ICommentService{
     }
 
     @Override
-    public void updateComment(long commentId, CommentUpdateDto updateDto) {
+    public void updateComment(Long commentId, CommentUpdateDto updateDto) {
         Comment comment = repository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("comment with " + commentId + " not found"));
 
@@ -46,7 +66,7 @@ public class CommentService implements ICommentService{
     }
 
     @Override
-    public void deleteComment(long commentId) {
+    public void deleteComment(Long commentId) {
         Comment comment = repository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("comment with " + commentId + " not found"));
 

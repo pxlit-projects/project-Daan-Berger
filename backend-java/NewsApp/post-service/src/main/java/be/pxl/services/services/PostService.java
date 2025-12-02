@@ -7,9 +7,12 @@ import be.pxl.services.domain.dto.PostRequest;
 import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.repository.PostRepository;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -103,10 +106,17 @@ public class PostService implements IPostService{
     @Override
     public void updatePostStatus(long postId, PostStatusRequest statusRequest) {
             Post post = repository.findById(postId)
-                    .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+                    .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
 
             post.setPostStatus(statusRequest.status());
             repository.save(post);
+    }
+
+    @Override
+    public PostResponse getPostById(long postId) {
+        Post post = repository.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId));
+        return mapToPostResponse(post);
     }
 
 
@@ -117,7 +127,7 @@ public class PostService implements IPostService{
                 .author(post.getAuthor())
                 .content(post.getContent())
                 .creationDate(post.getCreationDate())
-                .status(post.getPostStatus())
+                .status(post.getPostStatus().toString())
                 .build();
     }
 

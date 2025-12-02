@@ -18,4 +18,6 @@ public interface IPostService {
     void editPost(PostEditDto postEditDto, long postId);
 
     void updatePostStatus(long postId, PostStatusRequest statusRequest);
+
+    PostResponse getPostById(long postId);
 }
