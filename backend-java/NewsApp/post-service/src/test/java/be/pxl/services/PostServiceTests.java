@@ -2,7 +2,9 @@ package be.pxl.services;
 
 import be.pxl.services.domain.Post;
 import be.pxl.services.domain.PostStatus;
+import be.pxl.services.domain.dto.PostEditDto;
 import be.pxl.services.domain.dto.PostRequest;
+import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -102,7 +105,7 @@ public class PostServiceTests {
     }
 
     @Test
-    public void createPostTest() throws Exception {
+    public void createPost_ShouldReturnOk_whenRequestIsValid() throws Exception {
         PostRequest postRequest = PostRequest.builder()
                 .title("Test post")
                 .content("This is a test post")
@@ -118,4 +121,58 @@ public class PostServiceTests {
                 .content(postString))
                 .andExpect(status().isCreated());
     }
+
+    @Test
+    public void editPost_ShouldReturnOk_whenPostIdIsValid() throws Exception {
+        Post post = repository.findByPostStatus(PostStatus.DRAFT).getFirst();
+
+        Long postId = post.getId();
+
+        PostEditDto postEditDto = PostEditDto.builder()
+                .title("New Title")
+                .content("New content")
+                .build();
+
+        String editString = objectMapper.writeValueAsString(postEditDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/post/{postId}", postId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(editString))
+                .andExpect(status().isOk());
+
+        Post updatedPost = repository.findById(postId).orElseThrow();
+        assertEquals("New Title", updatedPost.getTitle());
+        assertEquals("New content", updatedPost.getContent());
+    }
+
+    @Test
+    public void updatePostStatus_ShouldUpdateStatus() throws Exception {
+        Post post = repository.findByPostStatus(PostStatus.DRAFT).getFirst();
+        Long postId = post.getId();
+
+        PostStatusRequest statusRequest = new PostStatusRequest(PostStatus.PUBLISHED);
+        String statusString = objectMapper.writeValueAsString(statusRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/post/{postId}/status", postId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusString))
+                .andExpect(status().isOk());
+
+        Post updatedPost = repository.findById(postId).orElseThrow();
+        assertEquals(PostStatus.PUBLISHED, updatedPost.getPostStatus());
+    }
+
+    @Test
+    public void updatePostStatus_ShouldReturnNotFound_WhenPostDoesNotExist() throws Exception {
+        Long nonExistentPostId = 999L;
+
+        PostStatusRequest statusRequest = new PostStatusRequest(PostStatus.PUBLISHED);
+        String statusString = objectMapper.writeValueAsString(statusRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.patch("/api/post/{postId}/status", nonExistentPostId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(statusString))
+                .andExpect(status().isNotFound());
+    }
+
 }

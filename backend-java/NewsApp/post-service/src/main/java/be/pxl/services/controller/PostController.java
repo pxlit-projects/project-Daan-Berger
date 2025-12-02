@@ -51,8 +51,7 @@ public class PostController {
         postService.editPost(postEditDto, postId);
     }
 
-    @PutMapping("/{postId}/status")
-    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PatchMapping("/{postId}/status")
     public void updatePostStatus(
             @PathVariable Long postId,
             @RequestBody PostStatusRequest statusRequest)

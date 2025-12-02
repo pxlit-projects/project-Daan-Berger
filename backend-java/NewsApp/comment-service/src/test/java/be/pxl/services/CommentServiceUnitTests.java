@@ -1,5 +1,6 @@
 package be.pxl.services;
 
+import be.pxl.services.client.PostClient;
 import be.pxl.services.domain.Comment;
 import be.pxl.services.domain.dto.CommentResponse;
 import be.pxl.services.domain.dto.CommentUpdateDto;
@@ -28,6 +29,9 @@ public class CommentServiceUnitTests {
 
     @Mock
     CommentRepository repository;
+
+    @Mock
+    PostClient postClient;
 
     @InjectMocks
     CommentService service;
