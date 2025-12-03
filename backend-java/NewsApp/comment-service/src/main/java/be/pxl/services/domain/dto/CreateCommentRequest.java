@@ -13,6 +13,4 @@ import lombok.NoArgsConstructor;
 public class CreateCommentRequest {
     @NotNull
     private String content;
-    @NotNull
-    private String author;
 }

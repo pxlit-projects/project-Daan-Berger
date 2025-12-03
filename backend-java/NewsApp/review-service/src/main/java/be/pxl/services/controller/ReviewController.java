@@ -32,14 +32,15 @@ public class ReviewController {
     @PostMapping("/{postId}/approve")
     public ResponseEntity<Void> approvePost(
             @PathVariable Long postId,
-            @RequestHeader("X-Role") String role
+            @RequestHeader("X-Role") String role,
+            @RequestHeader("X-User") String reviewer
     ) {
         if (!"editor".equalsIgnoreCase(role)) {
             log.warn("Unauthorized access attempt to approve post endpoint. Role provided: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        reviewService.approvePost(postId);
+        reviewService.approvePost(postId, reviewer);
         return ResponseEntity.ok().build();
     }
 
@@ -47,14 +48,15 @@ public class ReviewController {
     public ResponseEntity<Void> rejectPost(
             @PathVariable Long postId,
             @RequestBody RejectRequest rejectRequest,
-            @RequestHeader("X-Role") String role
+            @RequestHeader("X-Role") String role,
+            @RequestHeader("X-User") String reviewer
     ) {
         if (!"editor".equalsIgnoreCase(role)) {
             log.warn("Unauthorized access attempt to reject post endpoint. Role provided: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        reviewService.rejectPost(postId, rejectRequest);
+        reviewService.rejectPost(postId, reviewer, rejectRequest);
         return ResponseEntity.ok().build();
     }
 }

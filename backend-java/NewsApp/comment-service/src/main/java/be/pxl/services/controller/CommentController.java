@@ -20,8 +20,12 @@ public class CommentController {
 
     @PostMapping("/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createComment(@Valid @RequestBody CreateCommentRequest commentRequest, @PathVariable Long postId) {
-        service.createComment(commentRequest, postId);
+    public void createComment(
+            @Valid @RequestBody CreateCommentRequest commentRequest,
+            @PathVariable Long postId,
+            @RequestHeader("X-User") String author
+    ) {
+        service.createComment(commentRequest, postId , author);
     }
 
     @GetMapping

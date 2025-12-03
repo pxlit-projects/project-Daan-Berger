@@ -45,7 +45,14 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void createPost(@Valid @RequestBody PostRequest postRequest) {
+    public void createPost(
+            @Valid @RequestBody PostRequest postRequest,
+            @RequestHeader("X-User") String author
+    ) {
+        log.debug("Received request to create post from user: {}", author);
+
+        postRequest.setAuthor(author);
+
         postService.addNewPost(postRequest);
     }
 

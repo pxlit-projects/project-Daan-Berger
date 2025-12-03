@@ -30,11 +30,12 @@ public class ReviewService implements IReviewService{
     }
 
     @Transactional
-    public void approvePost(Long postId) {
+    public void approvePost(Long postId, String reviewer) {
         log.debug("Approving post: {}", postId);
 
         Review review = Review.builder()
                 .postId(postId)
+                .reviewer(reviewer)
                 .approved(true)
                 .reviewDate(LocalDateTime.now())
                 .build();
@@ -42,15 +43,17 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.PUBLISHED));
 
-        log.info("Post {} has been APPROVED. Review saved with id: {}", postId, review.getId());
+        log.info("Post {} has been APPROVED by {}. Review saved with id: {}",
+                postId, reviewer, review.getId());
     }
 
     @Transactional
-    public void rejectPost(Long postId, RejectRequest rejectRequest) {
+    public void rejectPost(Long postId, String reviewer, RejectRequest rejectRequest) {
         log.debug("Rejecting post: {}", postId);
 
         Review review = Review.builder()
                 .postId(postId)
+                .reviewer(reviewer)
                 .approved(false)
                 .comment(rejectRequest.reason())
                 .reviewDate(LocalDateTime.now())
@@ -59,7 +62,7 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED));
 
-        log.info("Post {} has been REJECTED. Reason: '{}'. Review saved with id: {}",
-                postId, rejectRequest.reason(), review.getId());
+        log.info("Post {} has been REJECTED by {}. Reason: '{}'. Review saved with id: {}",
+                postId, reviewer, rejectRequest.reason(), review.getId());
     }
 }

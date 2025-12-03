@@ -25,7 +25,7 @@ public class CommentService implements ICommentService{
     private final PostClient postClient;
 
     @Override
-    public void createComment(CreateCommentRequest commentRequest, Long postId) {
+    public void createComment(CreateCommentRequest commentRequest, Long postId, String author) {
         try {
             postClient.getPostById(postId);
         } catch (FeignException.NotFound e) {
@@ -38,12 +38,12 @@ public class CommentService implements ICommentService{
         Comment comment = Comment.builder()
                 .postId(postId)
                 .content(commentRequest.getContent())
-                .author(commentRequest.getAuthor())
+                .author(author)
                 .creationDate(LocalDateTime.now())
                 .build();
 
         repository.save(comment);
-        log.info("Saved comment with id: {}", comment.getId());
+        log.info("Comment with id: {}, created by {}", comment.getId(), author);
     }
 
     @Override
