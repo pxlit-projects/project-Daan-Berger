@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/comments")
+@RequestMapping("/api/comment")
 @RequiredArgsConstructor
 public class CommentController {
     private final ICommentService service;
@@ -34,13 +34,11 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
     public void updateComment(@PathVariable Long commentId, @RequestBody CommentUpdateDto updateDto) {
         service.updateComment(commentId, updateDto);
     }
 
     @DeleteMapping("/{commentId}")
-    @ResponseStatus(HttpStatus.ACCEPTED)
     public void deleteComment(@PathVariable Long commentId) {
         service.deleteComment(commentId);
     }

@@ -9,9 +9,7 @@ import be.pxl.services.repository.CommentRepository;
 import be.pxl.services.services.CommentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -36,19 +34,23 @@ public class CommentServiceUnitTests {
     @InjectMocks
     CommentService service;
 
+    @Captor
+    ArgumentCaptor<Comment> captor;
+
     @Test
     public void createComment_ShouldSaveComment() {
         long postId = 1L;
+        String author = "Bob";
 
         CreateCommentRequest commentRequest = CreateCommentRequest.builder()
                 .content("This is a test comment")
-                .author("Bob")
                 .build();
 
-        service.createComment(commentRequest,postId);
+        service.createComment(commentRequest, postId, author);
 
         Mockito.verify(repository, Mockito.times(1))
-                .save(Mockito.any(Comment.class));
+                .save(captor.capture());
+        assertEquals("Bob", captor.getValue().getAuthor());
     }
 
     @Test
