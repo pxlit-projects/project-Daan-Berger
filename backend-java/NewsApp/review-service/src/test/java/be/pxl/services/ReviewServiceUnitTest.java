@@ -58,7 +58,9 @@ public class ReviewServiceUnitTest {
 
     @Test void approvePost_ShouldSaveReview_And_UpdateStatusPublished() {
         Long postId = 123L;
-        reviewService.approvePost(postId);
+        String reviewer = "Bob";
+
+        reviewService.approvePost(postId, reviewer);
 
         verify(postClient).updatePostStatus(
                 postId,
@@ -76,7 +78,9 @@ public class ReviewServiceUnitTest {
     @Test
     public void rejectPost_ShouldSaveReview_And_UpdateStatusRejected() {
         Long postId = 123L;
-        reviewService.rejectPost(postId, new RejectRequest("Bad title"));
+        String reviewer = "Bob";
+
+        reviewService.rejectPost(postId, reviewer, new RejectRequest("Bad title"));
 
         verify(postClient).updatePostStatus(
                 postId,

@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MySQLContainer;
@@ -30,6 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.cloud.config.enabled=false",
+})
 public class PostServiceTests {
 
     @Autowired
@@ -117,6 +122,7 @@ public class PostServiceTests {
         String postString = objectMapper.writeValueAsString(postRequest);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/post")
+                        .header("X-User", "John Doe")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(postString))
                 .andExpect(status().isCreated());

@@ -15,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.containers.MySQLContainer;
@@ -32,6 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.cloud.config.enabled=false",
+})
 public class ReviewServiceTests {
     @Autowired
     MockMvc mockMvc;
@@ -77,10 +82,10 @@ public class ReviewServiceTests {
     public void getPendingPosts_ShouldReturnPosts_WhenRoleIsEditor() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/review/pending")
                         .header("X-Role", "editor")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Published post"))
-                .andExpect(jsonPath("$[0].status").value("PENDING"));
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$[0].title").value("Published post"))
+                        .andExpect(jsonPath("$[0].status").value("PENDING"));
     }
 
     @Test
@@ -88,9 +93,10 @@ public class ReviewServiceTests {
         Long postId = 1L;
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/review/{postId}/approve", postId)
-                .header("X-Role", "editor")
+                        .header("X-Role", "editor")
+                        .header("X-User", "TestUser")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                        .andExpect(status().isOk());
     }
 
     @Test
@@ -99,8 +105,9 @@ public class ReviewServiceTests {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/review/{postId}/approve", postId)
                         .header("X-Role", "user")
+                        .header("X-User", "TestUser")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+                        .andExpect(status().isForbidden());
     }
 
     @Test
@@ -113,6 +120,7 @@ public class ReviewServiceTests {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/review/{postId}/reject", postId)
                         .header("X-Role", "editor")
+                        .header("X-User", "TestUser")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestString))
                         .andExpect(status().isOk());
@@ -128,6 +136,7 @@ public class ReviewServiceTests {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/review/{postId}/reject", postId)
                         .header("X-Role", "user")
+                        .header("X-User", "TestUser")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestString))
                         .andExpect(status().isForbidden());
