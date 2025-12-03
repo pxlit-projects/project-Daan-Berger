@@ -9,8 +9,7 @@ import be.pxl.services.domain.dto.RejectRequest;
 import be.pxl.services.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,19 +17,22 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewService implements IReviewService{
 
     private final ReviewRepository reviewRepository;
     private final PostClient postClient;
 
-    private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);
-
     public List<PostResponse> getPendingPosts(String role) {
-        return postClient.getPendingPosts(role);
+        List<PostResponse> pendingPosts = postClient.getPendingPosts(role);
+        log.info("Fetching {} pending posts", pendingPosts.size());
+        return pendingPosts;
     }
 
     @Transactional
     public void approvePost(Long postId) {
+        log.debug("Approving post: {}", postId);
+
         Review review = Review.builder()
                 .postId(postId)
                 .approved(true)
@@ -40,11 +42,13 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.PUBLISHED));
 
-        logger.info("Post {}", postId);
+        log.info("Post {} has been APPROVED. Review saved with id: {}", postId, review.getId());
     }
 
     @Transactional
     public void rejectPost(Long postId, RejectRequest rejectRequest) {
+        log.debug("Rejecting post: {}", postId);
+
         Review review = Review.builder()
                 .postId(postId)
                 .approved(false)
@@ -55,6 +59,7 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED));
 
-        logger.warn("Post {} rejected, Reason: {}", postId, rejectRequest.reason());
+        log.info("Post {} has been REJECTED. Reason: '{}'. Review saved with id: {}",
+                postId, rejectRequest.reason(), review.getId());
     }
 }

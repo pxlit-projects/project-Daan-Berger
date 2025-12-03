@@ -7,6 +7,7 @@ import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.services.IPostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
 
     private final IPostService postService;
@@ -35,6 +37,7 @@ public class PostController {
             @RequestParam(required = false) String status
     ) {
         if (!"editor".equalsIgnoreCase(role)) {
+            log.warn("Unauthorized access attempt to editor endpoint. Role provided: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(postService.getAllPostsForEditor(status));

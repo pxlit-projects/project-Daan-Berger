@@ -16,15 +16,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService implements IPostService{
 
     private final PostRepository repository;
 
     @Override
     public List<PostResponse> getPublishedPosts(String content, String author, String date) {
+        log.debug("Fetching published posts with filters - content: {}, author: {}, date: {}", content, author, date);
+
         List<Post> posts = repository.findByPostStatus(PostStatus.PUBLISHED);
 
         if (content != null) {
@@ -39,7 +41,11 @@ public class PostService implements IPostService{
             posts = posts.stream().filter(p -> p.getCreationDate().toString().equals(date)).toList();
         }
 
-        return posts.stream().map(this::mapToPostResponse).toList();
+        List<PostResponse> postResponses = posts.stream().map(this::mapToPostResponse).toList();
+
+        log.info("Returning {} published posts", postResponses.size());
+
+        return postResponses;
     }
 
     @Override
@@ -51,13 +57,18 @@ public class PostService implements IPostService{
                 PostStatus requestedStatus = PostStatus.valueOf(status.toUpperCase());
                 posts = repository.findByPostStatus(requestedStatus);
             } catch (IllegalArgumentException e) {
+                log.error("Invalid status requested: {}", status);
                 return List.of();
             }
         } else {
             posts = repository.findAll();
         }
 
-        return posts.stream().map(this::mapToPostResponse).toList();
+        List<PostResponse> postResponses = posts.stream().map(this::mapToPostResponse).toList();
+
+        log.info("returning {} posts for editor", postResponses.size());
+
+        return postResponses;
     }
 
 
@@ -73,6 +84,8 @@ public class PostService implements IPostService{
         post.setPostStatus(postRequest.isDraft() ? PostStatus.DRAFT : PostStatus.PENDING);
 
         repository.save(post);
+
+        log.info("Adding new post: id: {} by {}", post.getId(), post.getAuthor());
     }
 
     @Override
@@ -100,21 +113,33 @@ public class PostService implements IPostService{
             }
         }
         repository.save(post);
+
+        log.info("Editing post with id: {}. Edited post: {}", postId, post);
     }
 
     @Override
     public void updatePostStatus(long postId, PostStatusRequest statusRequest) {
             Post post = repository.findById(postId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found with id: " + postId));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId));
+
+            PostStatus oldStatus = post.getPostStatus();
 
             post.setPostStatus(statusRequest.status());
+
+            PostStatus newStatus = post.getPostStatus();
+
             repository.save(post);
+
+            log.info("Updating post status for post with id {}, from {} to {}", postId, oldStatus, newStatus);
     }
 
     @Override
     public PostResponse getPostById(long postId) {
         Post post = repository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId));
+
+        log.debug("Fetched post: {}", postId);
+
         return mapToPostResponse(post);
     }
 
