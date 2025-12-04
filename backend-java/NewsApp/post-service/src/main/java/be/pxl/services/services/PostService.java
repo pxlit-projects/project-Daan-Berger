@@ -9,6 +9,7 @@ import be.pxl.services.domain.dto.PostStatusRequest;
 import be.pxl.services.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,6 +23,11 @@ import java.util.List;
 public class PostService implements IPostService{
 
     private final PostRepository repository;
+
+    @RabbitListener(queues = "post-status-queue")
+    public void receiveNotification(String message) {
+        log.info("Notification received: {}", message);
+    }
 
     @Override
     public List<PostResponse> getPublishedPosts(String content, String author, String date) {
@@ -122,11 +128,11 @@ public class PostService implements IPostService{
             Post post = repository.findById(postId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId));
 
-            PostStatus oldStatus = post.getPostStatus();
+            String oldStatus = post.getPostStatus().toString();
 
             post.setPostStatus(statusRequest.status());
 
-            PostStatus newStatus = post.getPostStatus();
+            String newStatus = post.getPostStatus().toString();
 
             repository.save(post);
 

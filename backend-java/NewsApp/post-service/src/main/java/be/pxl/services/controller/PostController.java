@@ -61,12 +61,13 @@ public class PostController {
         postService.editPost(postEditDto, postId);
     }
 
-    @PatchMapping("/{postId}/status")
-    public void updatePostStatus(
+    @PutMapping("/{postId}/status")
+    public ResponseEntity<Void> updatePostStatus(
             @PathVariable Long postId,
             @RequestBody PostStatusRequest statusRequest)
     {
         postService.updatePostStatus(postId, statusRequest);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{postId}")

@@ -10,6 +10,8 @@ import be.pxl.services.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,9 @@ public class ReviewService implements IReviewService{
 
     private final ReviewRepository reviewRepository;
     private final PostClient postClient;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     public List<PostResponse> getPendingPosts(String role) {
         List<PostResponse> pendingPosts = postClient.getPendingPosts(role);
@@ -43,6 +48,10 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.PUBLISHED));
 
+        String message = String.format("Post %d approved by %s", postId, reviewer);
+
+        rabbitTemplate.convertAndSend("post-status-queue", message);
+
         log.info("Post {} has been APPROVED by {}. Review saved with id: {}",
                 postId, reviewer, review.getId());
     }
@@ -61,6 +70,10 @@ public class ReviewService implements IReviewService{
         reviewRepository.save(review);
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED));
+
+        String message = String.format("Post %d rejected by %s", postId, reviewer);
+
+        rabbitTemplate.convertAndSend("post-status-queue", message);
 
         log.info("Post {} has been REJECTED by {}. Reason: '{}'. Review saved with id: {}",
                 postId, reviewer, rejectRequest.reason(), review.getId());

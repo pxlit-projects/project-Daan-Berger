@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class QueueConfiguration {
+
     @Bean
-    public Queue myQueue() {
+    public Queue approvalQueue() {
         return new Queue("post-status-queue", false);
     }
 }
