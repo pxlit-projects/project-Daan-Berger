@@ -44,7 +44,7 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createPost(
+    public ResponseEntity<PostResponse> createPost(
             @Valid @RequestBody PostRequest postRequest,
             @RequestHeader("X-Role") String role,
             @RequestHeader("X-User") String author
@@ -55,13 +55,13 @@ public class PostController {
         }
 
         log.debug("Received request to create post from user: {}", author);
-        postService.addNewPost(postRequest, author);
+        PostResponse response = postService.addNewPost(postRequest, author);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{postId}")
-    public ResponseEntity<Void> editPost(
+    public ResponseEntity<PostResponse> editPost(
             @RequestBody PostEditDto postEditDto,
             @PathVariable Long postId,
             @RequestHeader("X-Role") String role
@@ -72,8 +72,8 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        postService.editPost(postEditDto, postId);
-        return ResponseEntity.ok().build();
+        PostResponse response = postService.editPost(postEditDto, postId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{postId}/status")

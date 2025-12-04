@@ -13,9 +13,9 @@ public interface IPostService {
 
     List<PostResponse> getAllPostsForEditor(String status);
 
-    void addNewPost(@Valid PostRequest postRequest, String author);
+    PostResponse addNewPost(@Valid PostRequest postRequest, String author);
 
-    void editPost(PostEditDto postEditDto, long postId);
+    PostResponse editPost(PostEditDto postEditDto, long postId);
 
     void updatePostStatus(long postId, PostStatusRequest statusRequest);
 

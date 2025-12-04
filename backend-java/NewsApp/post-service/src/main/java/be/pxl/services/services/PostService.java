@@ -79,7 +79,7 @@ public class PostService implements IPostService{
 
 
     @Override
-    public void addNewPost(PostRequest postRequest, String author) {
+    public PostResponse addNewPost(PostRequest postRequest, String author) {
         Post post = Post.builder()
                 .title(postRequest.getTitle())
                 .content(postRequest.getContent())
@@ -92,10 +92,12 @@ public class PostService implements IPostService{
         repository.save(post);
 
         log.info("Adding new post: id: {} by {}", post.getId(), post.getAuthor());
+
+        return mapToPostResponse(post);
     }
 
     @Override
-    public void editPost(PostEditDto postEditDto, long postId) {
+    public PostResponse editPost(PostEditDto postEditDto, long postId) {
         Post post = repository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post with " + postId + " not found"));
 
@@ -121,6 +123,8 @@ public class PostService implements IPostService{
         repository.save(post);
 
         log.info("Editing post with id: {}. Edited post: {}", postId, post);
+
+        return mapToPostResponse(post);
     }
 
     @Override
