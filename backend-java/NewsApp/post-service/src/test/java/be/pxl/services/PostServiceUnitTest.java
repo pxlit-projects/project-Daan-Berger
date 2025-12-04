@@ -131,13 +131,15 @@ public class PostServiceUnitTest {
 
     @Test
     public void addNewPost_ShouldSetDraftStatus_WhenIsDraftTrue() {
-        PostRequest request = new PostRequest();
-        request.setTitle("Test");
-        request.setContent("Content");
-        request.setAuthor("John");
-        request.setDraft(true);
+        String author = "Bob";
 
-        postService.addNewPost(request);
+        PostRequest request = PostRequest.builder()
+                .title("Test")
+                .content("Content")
+                .draft(true)
+                .build();
+
+        postService.addNewPost(request, author);
 
         verify(postRepository).save(argThat(post ->
                 post.getPostStatus() == PostStatus.DRAFT));
@@ -145,13 +147,15 @@ public class PostServiceUnitTest {
 
     @Test
     public void addNewPost_ShouldSetPendingStatus_WhenIsDraftFalse() {
-        PostRequest request = new PostRequest();
-        request.setTitle("Test");
-        request.setContent("Content");
-        request.setAuthor("John");
-        request.setDraft(false);
+        String author = "Bob";
 
-        postService.addNewPost(request);
+        PostRequest request = PostRequest.builder()
+                .title("Test")
+                .content("Content")
+                .draft(false)
+                .build();
+
+        postService.addNewPost(request, author);
 
         verify(postRepository).save(argThat(post ->
                 post.getPostStatus() == PostStatus.PENDING));

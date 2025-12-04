@@ -28,12 +28,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.cloud.config.enabled=false",
+        "spring.cloud.discovery.enabled=false",
+        "eureka.client.enabled=false",
+        "spring.rabbitmq.listener.simple.auto-startup=false"
 })
 public class PostServiceTests {
 
@@ -45,6 +51,9 @@ public class PostServiceTests {
 
     @Autowired
     private PostRepository repository;
+
+    @MockBean
+    private RabbitTemplate rabbitTemplate;
 
     @Container
     private static MySQLContainer sqlContainer =
@@ -114,7 +123,6 @@ public class PostServiceTests {
         PostRequest postRequest = PostRequest.builder()
                 .title("Test post")
                 .content("This is a test post")
-                .author("John Doe")
                 .draft(true)
                 .build();
 
@@ -122,6 +130,7 @@ public class PostServiceTests {
         String postString = objectMapper.writeValueAsString(postRequest);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/post")
+                        .header("X-Role", "editor")
                         .header("X-User", "John Doe")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(postString))
@@ -142,6 +151,7 @@ public class PostServiceTests {
         String editString = objectMapper.writeValueAsString(postEditDto);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/post/{postId}", postId)
+                        .header("X-Role", "editor")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(editString))
                 .andExpect(status().isOk());
@@ -152,6 +162,19 @@ public class PostServiceTests {
     }
 
     @Test
+    public void editPost_ShouldReturnForbidden_WhenRoleIsNotEditor() throws Exception {
+        Post post = repository.findByPostStatus(PostStatus.DRAFT).getFirst();
+        PostEditDto postEditDto = PostEditDto.builder().title("Hacked Title").build();
+        String editString = objectMapper.writeValueAsString(postEditDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/post/{postId}", post.getId())
+                        .header("X-Role", "user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(editString))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void updatePostStatus_ShouldUpdateStatus() throws Exception {
         Post post = repository.findByPostStatus(PostStatus.DRAFT).getFirst();
         Long postId = post.getId();
@@ -159,7 +182,8 @@ public class PostServiceTests {
         PostStatusRequest statusRequest = new PostStatusRequest(PostStatus.PUBLISHED);
         String statusString = objectMapper.writeValueAsString(statusRequest);
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/post/{postId}/status", postId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/post/{postId}/status", postId)
+                        .header("X-Role", "editor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(statusString))
                 .andExpect(status().isOk());
@@ -175,7 +199,8 @@ public class PostServiceTests {
         PostStatusRequest statusRequest = new PostStatusRequest(PostStatus.PUBLISHED);
         String statusString = objectMapper.writeValueAsString(statusRequest);
 
-        mockMvc.perform(MockMvcRequestBuilders.patch("/api/post/{postId}/status", nonExistentPostId)
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/post/{postId}/status", nonExistentPostId)
+                        .header("X-Role", "editor")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(statusString))
                 .andExpect(status().isNotFound());
