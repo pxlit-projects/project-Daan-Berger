@@ -15,6 +15,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +32,9 @@ public class ReviewServiceUnitTest {
 
     @Mock
     private PostClient postClient;
+
+    @Mock
+    private RabbitTemplate rabbitTemplate;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -59,12 +63,14 @@ public class ReviewServiceUnitTest {
     @Test void approvePost_ShouldSaveReview_And_UpdateStatusPublished() {
         Long postId = 123L;
         String reviewer = "Bob";
+        String role = "editor";
 
-        reviewService.approvePost(postId, reviewer);
+        reviewService.approvePost(postId, reviewer, role);
 
         verify(postClient).updatePostStatus(
                 postId,
-                new PostStatusRequest(PostStatus.PUBLISHED)
+                new PostStatusRequest(PostStatus.PUBLISHED),
+                role
         );
 
         verify(repository).save(reviewCaptor.capture());
@@ -79,12 +85,14 @@ public class ReviewServiceUnitTest {
     public void rejectPost_ShouldSaveReview_And_UpdateStatusRejected() {
         Long postId = 123L;
         String reviewer = "Bob";
+        String role = "editor";
 
-        reviewService.rejectPost(postId, reviewer, new RejectRequest("Bad title"));
+        reviewService.rejectPost(postId, reviewer, new RejectRequest("Bad title"), role);
 
         verify(postClient).updatePostStatus(
                 postId,
-                new PostStatusRequest(PostStatus.REJECTED)
+                new PostStatusRequest(PostStatus.REJECTED),
+                role
         );
 
         verify(repository).save(reviewCaptor.capture());

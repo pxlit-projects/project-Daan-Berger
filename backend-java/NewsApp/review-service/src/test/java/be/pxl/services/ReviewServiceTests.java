@@ -8,6 +8,7 @@ import be.pxl.services.repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,6 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.cloud.config.enabled=false",
+        "spring.cloud.discovery.enabled=false",
+        "eureka.client.enabled=false",
+        "spring.rabbitmq.listener.simple.auto-startup=false"
 })
 public class ReviewServiceTests {
     @Autowired
@@ -49,6 +53,9 @@ public class ReviewServiceTests {
 
     @MockBean
     private PostClient client;
+
+    @MockBean
+    private RabbitTemplate rabbitTemplate;
 
     @Container
     private static MySQLContainer sqlContainer =
