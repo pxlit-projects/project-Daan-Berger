@@ -96,7 +96,7 @@ public class CommentServiceUnitTests {
         CommentUpdateDto updateDto = new CommentUpdateDto();
         updateDto.setContent("Updated content");
 
-        service.updateComment(1L, updateDto);
+        service.updateComment(1L, updateDto, "Bob");
 
         assertEquals("Updated content", existingComment.getContent());
         Mockito.verify(repository, Mockito.times(1)).save(existingComment);
@@ -104,12 +104,14 @@ public class CommentServiceUnitTests {
 
     @Test
     public void updateComment_ShouldThrowExceptionWhenIdNotFound() {
+        String author = "Bob";
+
         Mockito.when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
         CommentUpdateDto updateDto = new CommentUpdateDto();
         updateDto.setContent("New content");
 
-        assertThrows(RuntimeException.class, () -> service.updateComment(1L, updateDto));
+        assertThrows(RuntimeException.class, () -> service.updateComment(1L, updateDto, author));
     }
 
     @Test
@@ -124,16 +126,18 @@ public class CommentServiceUnitTests {
 
         Mockito.when(repository.findById(1L)).thenReturn(Optional.of(comment));
 
-        service.deleteComment(1L);
+        service.deleteComment(1L, "Bob");
 
         Mockito.verify(repository, Mockito.times(1)).delete(comment);
     }
 
     @Test
     public void deleteComment_ShouldThrowExceptionWhenIdNotFound() {
+        String author = "Bob";
+
         Mockito.when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.deleteComment(1L));
+        assertThrows(RuntimeException.class, () -> service.deleteComment(1L, author));
     }
 
 

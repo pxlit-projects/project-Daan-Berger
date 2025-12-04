@@ -25,7 +25,7 @@ public class CommentService implements ICommentService{
     private final PostClient postClient;
 
     @Override
-    public void createComment(CreateCommentRequest commentRequest, Long postId, String author) {
+    public CommentResponse createComment(CreateCommentRequest commentRequest, Long postId, String author) {
         try {
             postClient.getPostById(postId);
         } catch (FeignException.NotFound e) {
@@ -44,6 +44,8 @@ public class CommentService implements ICommentService{
 
         repository.save(comment);
         log.info("Comment with id: {}, created by {}", comment.getId(), author);
+
+        return mapToCommentResponse(comment);
     }
 
     @Override
@@ -54,22 +56,41 @@ public class CommentService implements ICommentService{
     }
 
     @Override
-    public void updateComment(Long commentId, CommentUpdateDto updateDto) {
+    public CommentResponse updateComment(
+            Long commentId,
+            CommentUpdateDto updateDto,
+            String author
+    ) {
         Comment comment = repository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "comment with " + commentId + " not found"));
 
+        if (!comment.getAuthor().equals(author)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Not the author of the comment"
+                    );
+        }
         comment.setContent(updateDto.getContent());
 
         repository.save(comment);
         log.info("Updated comment with id: {} to: {}", commentId, comment);
+
+        return mapToCommentResponse(comment);
     }
 
     @Override
-    public void deleteComment(Long commentId) {
+    public void deleteComment(Long commentId, String author) {
         Comment comment = repository.findById(commentId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "comment with " + commentId + " not found"));
+
+        if (!comment.getAuthor().equals(author)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Not the author of the comment"
+            );
+        }
 
         repository.delete(comment);
         log.info("Deleted comment with id: {}", commentId);

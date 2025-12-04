@@ -36,6 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.cloud.config.enabled=false",
+        "spring.cloud.discovery.enabled=false",
+        "eureka.client.enabled=false",
 })
 public class CommentServiceApplicationTest {
 
@@ -136,8 +138,9 @@ public class CommentServiceApplicationTest {
         long commentId = comment.getId();
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/comment/{commentId}", commentId)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                        .header("X-User", comment.getAuthor())
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isOk());
     }
 
 }

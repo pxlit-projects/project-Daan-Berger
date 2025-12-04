@@ -20,12 +20,12 @@ public class CommentController {
 
     @PostMapping("/{postId}")
     @ResponseStatus(HttpStatus.CREATED)
-    public void createComment(
+    public CommentResponse createComment(
             @Valid @RequestBody CreateCommentRequest commentRequest,
             @PathVariable Long postId,
             @RequestHeader("X-User") String author
     ) {
-        service.createComment(commentRequest, postId , author);
+        return service.createComment(commentRequest, postId , author);
     }
 
     @GetMapping
@@ -34,12 +34,19 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public void updateComment(@PathVariable Long commentId, @RequestBody CommentUpdateDto updateDto) {
-        service.updateComment(commentId, updateDto);
+    public CommentResponse updateComment(
+            @PathVariable Long commentId,
+            @RequestBody CommentUpdateDto updateDto,
+            @RequestHeader("X-User") String author
+    ) {
+        return service.updateComment(commentId, updateDto, author);
     }
 
     @DeleteMapping("/{commentId}")
-    public void deleteComment(@PathVariable Long commentId) {
-        service.deleteComment(commentId);
+    public void deleteComment(
+            @PathVariable Long commentId,
+            @RequestHeader("X-User") String author
+    ) {
+        service.deleteComment(commentId, author);
     }
 }
