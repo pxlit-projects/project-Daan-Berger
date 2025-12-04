@@ -14,5 +14,9 @@ public interface PostClient {
     List<PostResponse> getPendingPosts(@RequestHeader("X-Role") String role);
 
     @PutMapping("/api/post/{postId}/status")
-    ResponseEntity<Void> updatePostStatus(@PathVariable Long postId, @RequestBody PostStatusRequest statusRequest);
+    ResponseEntity<Void> updatePostStatus(
+            @PathVariable Long postId,
+            @RequestBody PostStatusRequest statusRequest,
+            @RequestHeader("X-Role") String role
+    );
 }

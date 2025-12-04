@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface IReviewService {
     List<PostResponse> getPendingPosts(String role);
-    void rejectPost(Long postId, String reviewer, RejectRequest rejectRequest);
-    void approvePost(Long postId, String reviewer);
+    void rejectPost(Long postId, String reviewer, RejectRequest rejectRequest, String role);
+    void approvePost(Long postId, String reviewer, String role);
 }

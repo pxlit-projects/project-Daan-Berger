@@ -40,7 +40,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        reviewService.approvePost(postId, reviewer);
+        reviewService.approvePost(postId, reviewer, role);
         return ResponseEntity.ok().build();
     }
 
@@ -56,7 +56,7 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        reviewService.rejectPost(postId, reviewer, rejectRequest);
+        reviewService.rejectPost(postId, reviewer, rejectRequest, role);
         return ResponseEntity.ok().build();
     }
 }

@@ -35,7 +35,7 @@ public class ReviewService implements IReviewService{
     }
 
     @Transactional
-    public void approvePost(Long postId, String reviewer) {
+    public void approvePost(Long postId, String reviewer, String role) {
         log.debug("Approving post: {}", postId);
 
         Review review = Review.builder()
@@ -46,7 +46,7 @@ public class ReviewService implements IReviewService{
                 .build();
         reviewRepository.save(review);
 
-        postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.PUBLISHED));
+        postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.PUBLISHED), role);
 
         String message = String.format("Post %d approved by %s", postId, reviewer);
 
@@ -57,7 +57,7 @@ public class ReviewService implements IReviewService{
     }
 
     @Transactional
-    public void rejectPost(Long postId, String reviewer, RejectRequest rejectRequest) {
+    public void rejectPost(Long postId, String reviewer, RejectRequest rejectRequest, String role) {
         log.debug("Rejecting post: {}", postId);
 
         Review review = Review.builder()
@@ -69,7 +69,7 @@ public class ReviewService implements IReviewService{
                 .build();
         reviewRepository.save(review);
 
-        postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED));
+        postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED), role);
 
         String message = String.format("Post %d rejected by %s", postId, reviewer);
 
