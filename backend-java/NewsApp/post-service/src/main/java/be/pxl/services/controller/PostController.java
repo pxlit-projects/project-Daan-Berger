@@ -37,35 +37,56 @@ public class PostController {
             @RequestParam(required = false) String status
     ) {
         if (!"editor".equalsIgnoreCase(role)) {
-            log.warn("Unauthorized access attempt to editor endpoint. Role provided: {}", role);
+            log.warn("Unauthorized access attempt to getPostsForEditor endpoint. Role provided: {}", role);
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.ok(postService.getAllPostsForEditor(status));
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public void createPost(
+    public ResponseEntity<Void> createPost(
             @Valid @RequestBody PostRequest postRequest,
+            @RequestHeader("X-Role") String role,
             @RequestHeader("X-User") String author
     ) {
+        if (!"editor".equalsIgnoreCase(role)) {
+            log.warn("Unauthorized access attempt to createPost endpoint. Role provided: {}", role);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         log.debug("Received request to create post from user: {}", author);
+        postService.addNewPost(postRequest, author);
 
-        postRequest.setAuthor(author);
-
-        postService.addNewPost(postRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PutMapping("/{postId}")
-    public void editPost(@RequestBody PostEditDto postEditDto, @PathVariable Long postId) {
+    public ResponseEntity<Void> editPost(
+            @RequestBody PostEditDto postEditDto,
+            @PathVariable Long postId,
+            @RequestHeader("X-Role") String role
+
+    ) {
+        if (!"editor".equalsIgnoreCase(role)) {
+            log.warn("Unauthorized access attempt to editPost endpoint. Role provided: {}", role);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         postService.editPost(postEditDto, postId);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{postId}/status")
     public ResponseEntity<Void> updatePostStatus(
             @PathVariable Long postId,
-            @RequestBody PostStatusRequest statusRequest)
-    {
+            @RequestBody PostStatusRequest statusRequest,
+            @RequestHeader("X-Role") String role
+    ) {
+        if (!"editor".equalsIgnoreCase(role)) {
+            log.warn("Unauthorized access attempt to updatePostStatus endpoint. Role provided: {}", role);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         postService.updatePostStatus(postId, statusRequest);
         return ResponseEntity.ok().build();
     }

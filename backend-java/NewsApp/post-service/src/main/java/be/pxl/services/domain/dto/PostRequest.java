@@ -14,7 +14,5 @@ public class PostRequest {
     private String title;
     @NotNull
     private String content;
-    @NotNull
-    private String author;
     private boolean draft;
 }

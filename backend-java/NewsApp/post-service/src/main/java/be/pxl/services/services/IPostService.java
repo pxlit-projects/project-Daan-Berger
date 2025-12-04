@@ -13,7 +13,7 @@ public interface IPostService {
 
     List<PostResponse> getAllPostsForEditor(String status);
 
-    void addNewPost(@Valid PostRequest postRequest);
+    void addNewPost(@Valid PostRequest postRequest, String author);
 
     void editPost(PostEditDto postEditDto, long postId);
 

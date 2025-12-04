@@ -79,11 +79,11 @@ public class PostService implements IPostService{
 
 
     @Override
-    public void addNewPost(PostRequest postRequest) {
+    public void addNewPost(PostRequest postRequest, String author) {
         Post post = Post.builder()
                 .title(postRequest.getTitle())
                 .content(postRequest.getContent())
-                .author(postRequest.getAuthor())
+                .author(author)
                 .creationDate(LocalDateTime.now())
                 .build();
 
