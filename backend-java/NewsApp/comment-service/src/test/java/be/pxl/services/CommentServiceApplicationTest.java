@@ -96,7 +96,9 @@ public class CommentServiceApplicationTest {
 
         long postId = 1L;
 
-        Mockito.when(postClient.getPostById(postId)).thenReturn(
+        String role = "user";
+
+        Mockito.when(postClient.getPostById(postId, role)).thenReturn(
                 new PostResponse(
                         postId,
                         "Title",
@@ -108,9 +110,10 @@ public class CommentServiceApplicationTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/comment/{postId}", postId)
                         .header("X-User", "TestUser")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestString))
-                .andExpect(status().isCreated());
+                        .header("X-Role", role)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestString))
+                        .andExpect(status().isCreated());
 
         Comment savedComment = repository.findAll().stream()
                 .filter(c -> c.getContent().equals("New comment"))

@@ -23,9 +23,10 @@ public class CommentController {
     public CommentResponse createComment(
             @Valid @RequestBody CreateCommentRequest commentRequest,
             @PathVariable Long postId,
-            @RequestHeader("X-User") String author
+            @RequestHeader("X-User") String author,
+            @RequestHeader("X-Role") String role
     ) {
-        return service.createComment(commentRequest, postId , author);
+        return service.createComment(commentRequest, postId , author, role);
     }
 
     @GetMapping

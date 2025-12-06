@@ -92,7 +92,17 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<PostResponse> getPostById(@PathVariable Long postId) {
-        return ResponseEntity.ok(postService.getPostById(postId));
+    public ResponseEntity<PostResponse> getPostById(
+            @PathVariable Long postId,
+            @RequestHeader("X-Role") String role
+    ) {
+        PostResponse post = postService.getPostById(postId);
+
+        if (!"editor".equalsIgnoreCase(role) && !"PUBLISHED".equals(post.getStatus())) {
+            log.warn("Non-editor attempted to access non-published post with id: {}", postId);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        return ResponseEntity.ok(post);
     }
 }

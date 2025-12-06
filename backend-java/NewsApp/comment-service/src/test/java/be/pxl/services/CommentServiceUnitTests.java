@@ -41,12 +41,13 @@ public class CommentServiceUnitTests {
     public void createComment_ShouldSaveComment() {
         long postId = 1L;
         String author = "Bob";
+        String role = "user";
 
         CreateCommentRequest commentRequest = CreateCommentRequest.builder()
                 .content("This is a test comment")
                 .build();
 
-        service.createComment(commentRequest, postId, author);
+        service.createComment(commentRequest, postId, author, role);
 
         Mockito.verify(repository, Mockito.times(1))
                 .save(captor.capture());

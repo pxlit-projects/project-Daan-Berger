@@ -25,9 +25,14 @@ public class CommentService implements ICommentService{
     private final PostClient postClient;
 
     @Override
-    public CommentResponse createComment(CreateCommentRequest commentRequest, Long postId, String author) {
+    public CommentResponse createComment(
+            CreateCommentRequest commentRequest,
+            Long postId,
+            String author,
+            String role
+    ) {
         try {
-            postClient.getPostById(postId);
+            postClient.getPostById(postId, role);
         } catch (FeignException.NotFound e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Can't find post with id " + postId);
         } catch (FeignException e) {

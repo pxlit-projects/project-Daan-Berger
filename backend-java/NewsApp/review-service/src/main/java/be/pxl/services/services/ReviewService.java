@@ -68,7 +68,7 @@ public class ReviewService implements IReviewService{
 
         postClient.updatePostStatus(postId, new PostStatusRequest(PostStatus.REJECTED), role);
 
-        String message = String.format("Post %d rejected by %s", postId, reviewer);
+        String message = String.format("Post %d rejected by %s, reason: %s", postId, reviewer, rejectRequest.reason());
 
         rabbitTemplate.convertAndSend("post-status-queue", message);
 
