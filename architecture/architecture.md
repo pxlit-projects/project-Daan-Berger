@@ -11,7 +11,7 @@
 ### **Post Service**
 - Beheer blogposts (CRUD)
 - **Sync**: OpenFeign calls naar Review Service
-- **Async**: Luistert naar review events, stuurt notificaties
+- **Async**: Luistert naar review events
 
 ### **Review Service**
 - Goedkeuren/afwijzen van posts
@@ -24,7 +24,7 @@
 
 ##  Infrastructuur
 
-### **Message Bus (RabbitMQ/Kafka)**
+### **Message Bus (RabbitMQ)**
 - Asynchrone event-driven communicatie
 - Event flow: Review Service → Message Bus → Post Service
 
@@ -43,7 +43,3 @@
   - Redacteur keurt post goed/af in **Review Service**
   - Review Service publiceert event naar **Message Bus**
   - **Post Service** luistert naar event
-  - Post Service update status + stuurt notificatie
-
-
- 
