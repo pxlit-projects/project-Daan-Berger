@@ -7,10 +7,13 @@ import be.pxl.services.domain.dto.CommentUpdateDto;
 import be.pxl.services.domain.dto.CreateCommentRequest;
 import be.pxl.services.repository.CommentRepository;
 import be.pxl.services.services.CommentService;
+import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -55,6 +58,34 @@ public class CommentServiceUnitTests {
     }
 
     @Test
+    public void createComment_ShouldThrowExceptionWhenPostNotFound() {
+        CreateCommentRequest commentRequest = CreateCommentRequest.builder()
+                .content("Test comment")
+                .build();
+
+        Mockito.when(postClient.getPostById(1L, "user"))
+                .thenThrow(FeignException.NotFound.class);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.createComment(commentRequest, 1L, "Bob", "user"));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    public void createComment_ShouldThrowExceptionWhenPostServiceUnavailable() {
+        CreateCommentRequest commentRequest = CreateCommentRequest.builder()
+                .content("Test comment")
+                .build();
+
+        Mockito.when(postClient.getPostById(1L, "user"))
+                .thenThrow(FeignException.ServiceUnavailable.class);
+
+        assertThrows(RuntimeException.class, () ->
+                service.createComment(commentRequest, 1L, "Bob", "user"));
+    }
+
+    @Test
     public void getAllComments_ShouldReturnListOfCommentResponses() {
         Comment comment1 = Comment.builder()
                 .id(1L)
@@ -94,12 +125,13 @@ public class CommentServiceUnitTests {
 
         Mockito.when(repository.findById(1L)).thenReturn(Optional.of(existingComment));
 
-        CommentUpdateDto updateDto = new CommentUpdateDto();
-        updateDto.setContent("Updated content");
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                        .content("Updated comment")
+                        .build();
 
         service.updateComment(1L, updateDto, "Bob");
 
-        assertEquals("Updated content", existingComment.getContent());
+        assertEquals(updateDto.getContent(), existingComment.getContent());
         Mockito.verify(repository, Mockito.times(1)).save(existingComment);
     }
 
@@ -109,10 +141,36 @@ public class CommentServiceUnitTests {
 
         Mockito.when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
-        CommentUpdateDto updateDto = new CommentUpdateDto();
-        updateDto.setContent("New content");
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                        .content("New content")
+                        .build();
 
-        assertThrows(RuntimeException.class, () -> service.updateComment(1L, updateDto, author));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.updateComment(1L, updateDto, author));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    public void updateComment_ShouldThrowExceptionWhenNotAuthor() {
+        Comment existingComment = Comment.builder()
+                .id(1L)
+                .postId(10L)
+                .content("Old content")
+                .author("Bob")
+                .creationDate(LocalDateTime.now())
+                .build();
+
+        Mockito.when(repository.findById(1L)).thenReturn(Optional.of(existingComment));
+
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                        .content("Updated content")
+                        .build();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.updateComment(1L, updateDto, "Alice"));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
     }
 
     @Test
@@ -138,8 +196,27 @@ public class CommentServiceUnitTests {
 
         Mockito.when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> service.deleteComment(1L, author));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.deleteComment(1L, author));
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 
+    @Test
+    public void deleteComment_ShouldThrowExceptionWhenNotAuthor() {
+        Comment comment = Comment.builder()
+                .id(1L)
+                .postId(10L)
+                .content("Test comment")
+                .author("Bob")
+                .creationDate(LocalDateTime.now())
+                .build();
 
+        Mockito.when(repository.findById(1L)).thenReturn(Optional.of(comment));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                service.deleteComment(1L, "Alice"));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
 }

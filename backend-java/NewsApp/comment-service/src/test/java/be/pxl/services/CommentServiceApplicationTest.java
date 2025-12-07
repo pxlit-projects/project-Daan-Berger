@@ -3,6 +3,7 @@ package be.pxl.services;
 
 import be.pxl.services.client.PostClient;
 import be.pxl.services.domain.Comment;
+import be.pxl.services.domain.dto.CommentUpdateDto;
 import be.pxl.services.domain.dto.CreateCommentRequest;
 import be.pxl.services.domain.dto.PostResponse;
 import be.pxl.services.repository.CommentRepository;
@@ -136,6 +137,68 @@ public class CommentServiceApplicationTest {
     }
 
     @Test
+    public void updateComment_ShouldUpdateComment() throws Exception {
+        Comment comment = repository.findAll().stream()
+                .filter(c -> c.getAuthor().equals("Bob"))
+                .findFirst()
+                .orElseThrow();
+
+        long commentId = comment.getId();
+
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                .content("Updated content")
+                .build();
+
+        String requestString = objectMapper.writeValueAsString(updateDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/comment/{commentId}", commentId)
+                        .header("X-User", "Bob")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestString))
+                        .andExpect(status().isOk());
+
+        Comment updatedComment = repository.findById(commentId).orElseThrow();
+        assertEquals(updateDto.getContent(), updatedComment.getContent());
+    }
+
+    @Test
+    public void updateComment_ShouldReturnForbiddenWhenNotAuthor() throws Exception {
+        Comment comment = repository.findAll().stream()
+                .filter(c -> c.getAuthor().equals("Bob"))
+                .findFirst()
+                .orElseThrow();
+
+        long commentId = comment.getId();
+
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                .content("Attempting to update Bob's comment")
+                .build();
+
+        String requestString = objectMapper.writeValueAsString(updateDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/comment/{commentId}", commentId)
+                        .header("X-User", "Alice")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestString))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void updateComment_ShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+        CommentUpdateDto updateDto = CommentUpdateDto.builder()
+                .content("Trying to update non-existent comment")
+                .build();
+
+        String requestString = objectMapper.writeValueAsString(updateDto);
+
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/comment/{commentId}", 999L)
+                        .header("X-User", "Bob")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestString))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     public void deleteComment_ShouldDeleteComment() throws Exception {
         Comment comment = repository.findAll().getFirst();
         long commentId = comment.getId();
@@ -144,6 +207,30 @@ public class CommentServiceApplicationTest {
                         .header("X-User", comment.getAuthor())
                         .contentType(MediaType.APPLICATION_JSON))
                         .andExpect(status().isOk());
+    }
+
+    @Test
+    public void deleteComment_ShouldReturnForbiddenWhenNotAuthor() throws Exception {
+        Comment comment = repository.findAll().stream()
+                .filter(c -> c.getAuthor().equals("Bob"))
+                .findFirst()
+                .orElseThrow();
+
+        long commentId = comment.getId();
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/comment/{commentId}", commentId)
+                        .header("X-User", "Alice")
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void deleteComment_ShouldReturnNotFoundWhenIdDoesNotExist() throws Exception {
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/comment/{commentId}", 999L)
+                        .header("X-User", "Bob")
+                        .contentType(MediaType.APPLICATION_JSON))
+                        .andExpect(status().isNotFound());
     }
 
 }
